@@ -1,0 +1,135 @@
+--// Servicios
+local Players = game:GetService("Players")
+local StatsService = game:GetService("Stats")
+
+--// Variables
+local player = Players.LocalPlayer
+local prediction = 0
+local ping = 0
+
+--// UI
+local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+ScreenGui.Name = "PredictionProUI"
+ScreenGui.ResetOnSpawn = false
+
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Position = UDim2.new(0.4, 0, 0.4, 0)
+Frame.Size = UDim2.new(0, 260, 0, 160)
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Draggable = true
+Frame.Name = "MainFrame"
+
+local UICorner = Instance.new("UICorner", Frame)
+UICorner.CornerRadius = UDim.new(0, 10)
+
+local UIStroke = Instance.new("UIStroke", Frame)
+UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke.Thickness = 2
+UIStroke.Color = Color3.fromRGB(80, 80, 255)
+
+local titleLabel = Instance.new("TextLabel", Frame)
+titleLabel.Size = UDim2.new(1, 0, 0, 30)
+titleLabel.Position = UDim2.new(0, 0, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "👑 Pred Finder +"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 16
+
+local generateBtn = Instance.new("TextButton", Frame)
+generateBtn.Size = UDim2.new(0, 110, 0, 30)
+generateBtn.Position = UDim2.new(0, 10, 0, 40)
+generateBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 127)
+generateBtn.Text = "Generate"
+generateBtn.TextColor3 = Color3.new(1,1,1)
+generateBtn.Font = Enum.Font.GothamSemibold
+generateBtn.TextSize = 14
+
+local stopBtn = Instance.new("TextButton", Frame)
+stopBtn.Size = UDim2.new(0, 110, 0, 30)
+stopBtn.Position = UDim2.new(0, 140, 0, 40)
+stopBtn.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+stopBtn.Text = "Reset"
+stopBtn.TextColor3 = Color3.new(1,1,1)
+stopBtn.Font = Enum.Font.GothamSemibold
+stopBtn.TextSize = 14
+
+local copyBtn = Instance.new("TextButton", Frame)
+copyBtn.Size = UDim2.new(0, 240, 0, 30)
+copyBtn.Position = UDim2.new(0, 10, 0, 80)
+copyBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 170)
+copyBtn.Text = "Copy Prediction"
+copyBtn.TextColor3 = Color3.new(1,1,1)
+copyBtn.Font = Enum.Font.GothamSemibold
+copyBtn.TextSize = 14
+
+local pingLabel = Instance.new("TextLabel", Frame)
+pingLabel.Size = UDim2.new(1, -20, 0, 20)
+pingLabel.Position = UDim2.new(0, 10, 0, 120)
+pingLabel.BackgroundTransparency = 1
+pingLabel.Text = "Ping: 0 ms"
+pingLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+pingLabel.Font = Enum.Font.Gotham
+pingLabel.TextSize = 14
+pingLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local predictionLabel = Instance.new("TextLabel", Frame)
+predictionLabel.Size = UDim2.new(1, -20, 0, 20)
+predictionLabel.Position = UDim2.new(0, 10, 0, 140)
+predictionLabel.BackgroundTransparency = 1
+predictionLabel.Text = "Prediction: 0.000000"
+predictionLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+predictionLabel.Font = Enum.Font.Gotham
+predictionLabel.TextSize = 14
+predictionLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local watermark = Instance.new("TextLabel", Frame)
+watermark.Size = UDim2.new(0, 200, 0, 20)
+watermark.Position = UDim2.new(1, -205, 1, -20)
+watermark.BackgroundTransparency = 1
+watermark.Text = "#1 Pred Finder 🔥"
+watermark.TextColor3 = Color3.fromRGB(80, 80, 255)
+watermark.TextSize = 11
+watermark.TextXAlignment = Enum.TextXAlignment.Right
+
+--// Cálculo de ping correcto
+local function getPing()
+	local stats = StatsService:FindFirstChild("PerformanceStats")
+	if stats then
+		local pingStat = stats:FindFirstChild("Ping")
+		if pingStat then
+			local rawPing = pingStat:GetValue()
+			return tonumber(string.format("%.0f", rawPing))
+		end
+	end
+	return 0
+end
+
+--// Cálculo de predicción óptima
+local function calculatePrediction()
+	local pingNow = getPing()
+	local bestPrediction = (pingNow / 1000) + 0.045
+	return pingNow, tonumber(string.format("%.15f", bestPrediction))
+end
+
+--// Botones
+generateBtn.MouseButton1Click:Connect(function()
+	ping, prediction = calculatePrediction()
+	pingLabel.Text = "Ping: " .. tostring(ping) .. " ms"
+	predictionLabel.Text = "Prediction: " .. tostring(prediction)
+end)
+
+stopBtn.MouseButton1Click:Connect(function()
+	ping = 0
+	prediction = 0
+	pingLabel.Text = "Ping: 0 ms"
+	predictionLabel.Text = "Prediction: 0.000000"
+end)
+
+copyBtn.MouseButton1Click:Connect(function()
+	if setclipboard then
+		setclipboard(tostring(prediction))
+	end
+end)
